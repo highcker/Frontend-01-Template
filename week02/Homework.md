@@ -1,59 +1,19 @@
-#### Number
+# 作业
 
-整数|浮点数
-
-```markdown
-/^-?\d+(\.\d+)?\$/
-```
-
-二进制
+1. 写一个正则表达式 匹配所有 Number 直接量
 
 ```
-/^[01]+$/
+/^-?([^0]\d*\.?\d*|[0]\.\d*|\.\d*|[0]|[\u0030-\u0039]*)$/.test("\u0043")
 ```
 
-八进制
+2. 写一个 UTF-8 Encoding 的函数
 
 ```
-/^[0-7]+$/
+...
 ```
 
-十六进制
+3. 写一个正则表达式，匹配所有的字符串直接量，单引号和双引号
 
 ```
-/^0[xX][0-9a-fA-F]+$/
-```
-
-Number 字面量
-
-```
-/(^-?\d+(\.\d+)?$)|(^[01]+$)|(^[0-7]+$)|(^0[xX][0-9a-fA-F]+$)/
-```
-
-#### utf-8
-
-```js
-function encodingUTF(str) {
-  const encodeText = encodeURIComponent(str);
-  const arr = [];
-
-  for (let i = 0; i < encodeText.length; i++) {
-    const cod = encodeText.charAt(i);
-    if (cod === "%") {
-      const hex = encodeText.charAt(i + 1) + encodeText.charAt(i + 2);
-      const hexVal = parseInt(hex, 16);
-      arr.push(hexVal);
-      i += 2;
-      continue;
-    }
-    arr.push(cod.charCodeAt(0));
-  }
-  return arr;
-}
-```
-
-#### String
-
-```
-/^[\u0021-\u007E]{6,16}|[\x21-\x7E]{6,16}|(['"])(?:(?!\1).)*?\1$/
+ /^[\u4E00-\u9FA5A-Za-z0-9_]+$/
 ```
