@@ -25,7 +25,6 @@ class Request {
         .map((key) => `${key}=${encodeURIComponent(this.body[key])}`)
         .join("&");
     }
-
     this.headers["Content-Length"] = this.bodyText.length;
   }
 
@@ -62,6 +61,8 @@ ${this.bodyText}\r
 
       connection.on("data", (data) => {
         parser.receive(data.toString());
+        console.log("data.toString():\n", data.toString());
+
         // console.log(parser.statusLine);
         // console.log(parser.headers);
         if (parser.isFinished) {
@@ -101,6 +102,7 @@ class ResponseParser {
     this.headers = {};
     this.headerName = "";
     this.headerValue = "";
+    this.bodyParser = null;
   }
 
   get isFinished() {
@@ -155,7 +157,7 @@ class ResponseParser {
       if (char === "\r") {
         // console.log(this.headerName, this.headerValue);
         this.current = this.WAITING_HEADER_LINE_END;
-        this.headers[`${this.headerName}`] = this.headerValue;
+        this.headers[this.headerName] = this.headerValue;
         // console.log(this.headers);
         this.headerName = "";
         this.headerValue = "";
@@ -184,6 +186,7 @@ class TrunkedBodyParser {
     this.READING_TRUNK = 2;
     this.WAITING_NEW_LINE = 3;
     this.WAITING_NEW_LINE_END = 4;
+
     this.isFinished = false;
     this.length = 0;
     this.content = [];
@@ -199,8 +202,8 @@ class TrunkedBodyParser {
         }
         this.current = this.WAITING_LENGTH_LINE_END;
       } else {
-        this.length *= 10;
-        this.length += char.charCodeAt(0) - "0".charCodeAt(0);
+        this.length *= 16;
+        this.length += parseInt(char, 16);
       }
     } else if (this.current === this.WAITING_LENGTH_LINE_END) {
       if (char === "\n") {
@@ -243,11 +246,13 @@ void (async function () {
   console.log("[response]", response.body);
 
   let dom = parser.parseHTML(response.body);
-  // let viewport = images(800, 600);
+  let viewport = images(800, 600);
+  console.log(dom);
+  render(viewport, dom);
+  render(viewport, dom.children[1].children[3].children[1].children[1]);
+  // render(viewport, dom.children[1].children[3].children[1].children[3]);
 
-  // render(viewport, dom);
-
-  // viewport.save("viewport.jpg");
+  viewport.save("viewport.jpg");
 })();
 
 // const client = net.createConnection({ port: 8088, host: "127.0.0.1" }, () => {

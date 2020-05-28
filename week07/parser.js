@@ -1,13 +1,12 @@
 const css = require("css");
+const layout = require("./layout.js");
 
 const EOF = Symbol("EOF"); // EOF: end of file
-
-const layout = require("./layout.js");
 let currentToken = null;
 let currentAttribute = null;
+let currentTextNode = null;
 
 let stack = [{ type: "document", children: [] }];
-let currentTextNode = null;
 
 let rules = [];
 function addCSSRules(text) {
@@ -79,7 +78,7 @@ function computeCSS(element) {
       continue;
     }
 
-    // let matched = false;
+    let matched = false;
     var j = 1;
     for (var i = 0; i < customElements.length; i++) {
       if (match(element[i], selectorParts[j])) {
@@ -140,7 +139,7 @@ function emit(token) {
     computeCSS(element);
 
     top.children.push(element);
-    // element.parent = top;
+    element.parent = top;
 
     if (!token.isSelfClosing) {
       stack.push(element);
@@ -158,7 +157,7 @@ function emit(token) {
     }
     layout(top);
     currentTextNode = null;
-  } else if (token.type == "text") {
+  } else if (token.type === "text") {
     if (currentTextNode == null) {
       currentTextNode = {
         type: "text",
@@ -224,7 +223,7 @@ function tagName(c) {
     return beforeAttributeName;
   } else if (c === "/") {
     return selfClosingStartTag;
-  } else if (c.match(/^[A-Z]$/)) {
+  } else if (c.match(/^[a-zA-Z]$/)) {
     currentToken.tagName += c;
     return tagName;
   } else if (c === ">") {
@@ -266,7 +265,7 @@ function attributeName(c) {
 }
 
 function beforeAttributeValue(c) {
-  if (c.match(/^[\t\n\f ] $/) || c == "/" || c == ">" || c == EOF) {
+  if (c.match(/^[\t\n\f ]$/) || c == "/" || c == ">" || c == EOF) {
     return beforeAttributeValue;
   } else if (c == '"') {
     return doubleQuotedAttributeValue;
@@ -350,7 +349,6 @@ function selfClosingStartTag(c) {
 }
 
 function afterAttributeName(c) {
-  console.log(c);
   if (c.match(/^[\t\n\f ]$/)) {
     return afterAttributeName;
   } else if (c == "/") {
@@ -362,6 +360,8 @@ function afterAttributeName(c) {
     emit(currentToken);
     return data;
   } else if (c == EOF) {
+    // debug
+    return selfClosingStartTag;
   } else {
     currentToken[currentAttribute.name] = currentAttribute.value;
     currentAttribute = {
